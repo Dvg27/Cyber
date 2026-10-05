@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malware Analysis Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fa-solid fa-shield-virus"></i></div>
+            <span>Aegis</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="nav-item active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="/scanner.html" class="nav-item"><i class="fa-solid fa-microscope"></i> File Scanner</a></li>
+            <li><a href="/ioc.html" class="nav-item"><i class="fa-solid fa-network-wired"></i> IoC Detection</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h1 class="page-title">Dashboard Overview</h1>
+            <div class="user-profile">
+                <span class="badge low"><i class="fa-solid fa-server"></i> System Online</span>
+            </div>
+        </header>
+
+        <section class="grid-cards">
+            <div class="stat-card">
+                <div class="stat-icon icon-blue"><i class="fa-solid fa-file-shield"></i></div>
+                <div class="stat-info">
+                    <h3>Total Scans</h3>
+                    <p id="stat-total-scans">---</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-red"><i class="fa-solid fa-bug"></i></div>
+                <div class="stat-info">
+                    <h3>Threats Detected</h3>
+                    <p id="stat-threats">---</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-purple"><i class="fa-solid fa-fingerprint"></i></div>
+                <div class="stat-info">
+                    <h3>Unique IoCs</h3>
+                    <p id="stat-iocs">---</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-green"><i class="fa-solid fa-shield-check"></i></div>
+                <div class="stat-info">
+                    <h3>Safe Files</h3>
+                    <p id="stat-safe">---</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Recent Scans</h2>
+                <a href="/scanner.html" class="btn btn-primary"><i class="fa-solid fa-plus"></i> New Scan</a>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Date</th>
+                            <th>SHA-256</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-scans-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading recent scans...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchRecentScans();
+            fetchStats();
+        });
+
+        async function fetchRecentScans() {
+            try {
+                const res = await fetch('/api/recent');
+                const data = await res.json();
+                const tbody = document.getElementById('recent-scans-body');
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No scans performed yet.</td></tr>';
+                    return;
+                }
+
+                data.forEach(scan => {
+                    let badgeClass = scan.score >= 70 ? 'high' : (scan.score >= 30 ? 'medium' : 'low');
+                    let status = scan.score >= 70 ? 'Malicious' : (scan.score >= 30 ? 'Suspicious' : 'Clean');
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${scan.filename}</strong></td>
+                        <td>${new Date(scan.timestamp).toLocaleString()}</td>
+                        <td class="hash-font">${scan.sha256.substring(0, 16)}...</td>
+                        <td>${scan.score}/100</td>
+                        <td><span class="badge ${badgeClass}">${status}</span></td>
+                        <td><a href="/report.html?id=${scan.id}" style="color: var(--accent-blue); text-decoration: none;"><i class="fa-solid fa-arrow-up-right-from-square"></i> View</a></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error('Error fetching scans:', err);
+            }
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                document.getElementById('stat-total-scans').innerText = data.total || 0;
+                document.getElementById('stat-threats').innerText = data.threats || 0;
+                document.getElementById('stat-iocs').innerText = data.iocs || 0;
+                document.getElementById('stat-safe').innerText = data.safe || 0;
+            } catch (err) {
+                console.error('Error fetching stats:', err);
+            }
+        }
+    </script>
+</body>
+</html>
