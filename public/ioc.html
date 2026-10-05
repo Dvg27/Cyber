@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoC Detection - Malware Analysis</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fa-solid fa-shield-virus"></i></div>
+            <span>Aegis</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="/scanner.html" class="nav-item"><i class="fa-solid fa-microscope"></i> File Scanner</a></li>
+            <li><a href="/ioc.html" class="nav-item active"><i class="fa-solid fa-network-wired"></i> IoC Detection</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h1 class="page-title">Indicators of Compromise (IoCs)</h1>
+        </header>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Global Discovered IoCs</h2>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+                <input type="text" id="ioc-search" placeholder="Search IP, Hash, Domain..." style="flex: 1; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white; font-family: inherit;">
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Value</th>
+                            <th>Source File</th>
+                            <th>Date Discovered</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ioc-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted);">Loading IoCs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchIoCs);
+        
+        document.getElementById('ioc-search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#ioc-body tr');
+            rows.forEach(row => {
+                if (row.textContent.toLowerCase().includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        async function fetchIoCs() {
+            try {
+                const res = await fetch('/api/iocs');
+                const iocs = await res.json();
+                const tbody = document.getElementById('ioc-body');
+                tbody.innerHTML = '';
+                
+                if (iocs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No IoCs recorded yet.</td></tr>';
+                    return;
+                }
+
+                iocs.forEach(ioc => {
+                    let typeIcon = '';
+                    let typeColor = '';
+                    switch(ioc.type) {
+                        case 'ip': typeIcon = 'fa-network-wired'; typeColor = 'var(--accent-blue)'; break;
+                        case 'url': typeIcon = 'fa-link'; typeColor = 'var(--accent-purple)'; break;
+                        case 'hash': typeIcon = 'fa-hashtag'; typeColor = 'var(--accent-red)'; break;
+                        default: typeIcon = 'fa-cube'; typeColor = 'var(--text-secondary)';
+                    }
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><span style="color: ${typeColor};"><i class="fa-solid ${typeIcon}"></i> ${ioc.type.toUpperCase()}</span></td>
+                        <td class="${ioc.type === 'hash' ? 'hash-font' : ''}" style="font-weight: 500;">${ioc.value}</td>
+                        <td>${ioc.source_file || 'Unknown'}</td>
+                        <td>${new Date(ioc.timestamp).toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat Report - Malware Analysis</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fa-solid fa-shield-virus"></i></div>
+            <span>Aegis</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="/scanner.html" class="nav-item"><i class="fa-solid fa-microscope"></i> File Scanner</a></li>
+            <li><a href="/ioc.html" class="nav-item"><i class="fa-solid fa-network-wired"></i> IoC Detection</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h1 class="page-title">Analysis Report</h1>
+            <a href="/scanner.html" class="btn btn-primary"><i class="fa-solid fa-arrow-left"></i> New Scan</a>
+        </header>
+
+        <div id="loading" style="text-align: center; padding: 4rem; color: var(--text-secondary);">
+            <i class="fa-solid fa-circle-notch fa-spin fa-3x"></i>
+            <p style="margin-top: 1rem;">Loading Report Data...</p>
+        </div>
+
+        <div id="report-content" style="display: none;">
+            <div class="report-grid">
+                <div>
+                    <section class="report-section">
+                        <h4><i class="fa-solid fa-file-code"></i> File Information</h4>
+                        <div class="kv-pair"><span class="kv-key">File Name</span><span class="kv-value" id="rep-filename"></span></div>
+                        <div class="kv-pair"><span class="kv-key">File Size</span><span class="kv-value" id="rep-size"></span></div>
+                        <div class="kv-pair"><span class="kv-key">Type</span><span class="kv-value" id="rep-type"></span></div>
+                        <div class="kv-pair"><span class="kv-key">MD5</span><span class="kv-value hash-font" id="rep-md5"></span></div>
+                        <div class="kv-pair"><span class="kv-key">SHA-256</span><span class="kv-value hash-font" id="rep-sha256"></span></div>
+                        <div class="kv-pair"><span class="kv-key">Scan Date</span><span class="kv-value" id="rep-date"></span></div>
+                    </section>
+
+                    <section class="report-section">
+                        <h4><i class="fa-solid fa-bug"></i> Static Analysis Details</h4>
+                        <div class="terminal" id="rep-static-details">
+                            Loading static analysis details...
+                        </div>
+                    </section>
+                </div>
+
+                <div>
+                    <section class="report-section" style="text-align: center;">
+                        <h4><i class="fa-solid fa-gauge-high"></i> Threat Score</h4>
+                        <div class="threat-score-ring" id="rep-score-ring">
+                            <div class="score-value" id="rep-score">0</div>
+                            <div class="score-label">/100</div>
+                        </div>
+                        <div class="verdict-box" id="rep-verdict">
+                            UNKNOWN
+                        </div>
+                    </section>
+
+                    <section class="report-section">
+                        <h4><i class="fa-solid fa-network-wired"></i> Detected IoCs</h4>
+                        <div id="rep-iocs">
+                            <p style="color: var(--text-muted); text-align: center;">No IoCs found.</p>
+                        </div>
+                    </section>
+
+                    <section class="report-section">
+                        <h4><i class="fa-solid fa-user-shield"></i> Recommendation</h4>
+                        <p id="rep-recommendation" style="color: var(--text-primary); line-height: 1.6;"></p>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/report.js"></script>
+</body>
+</html>
