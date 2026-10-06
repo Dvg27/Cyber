@@ -63,7 +63,25 @@ def scan_file():
     finally:
         conn.close()
 
-    return jsonify({'id': scan_id, 'message': 'Scan complete'})
+    return jsonify({
+        'id': scan_id,
+        'message': 'Scan complete',
+        # Full report embedded so frontend sessionStorage caching works consistently
+        # with the Vercel deployment (no cross-container DB access needed)
+        'report': {
+            'id': scan_id,
+            'filename': report['filename'],
+            'size': report['size'],
+            'type': report['type'],
+            'md5': report['md5'],
+            'sha256': report['sha256'],
+            'score': report['score'],
+            'recommendation': report['recommendation'],
+            'static_details': report['static_details'],
+            'iocs': report['iocs'],
+            'timestamp': None
+        }
+    })
 
 @app.route('/api/report/<int:report_id>')
 def get_report(report_id):

@@ -21,21 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
     }
 
-    // Highlight dropzone
+    // Highlight dropzone on drag
     ['dragenter', 'dragover'].forEach(eventName => {
         dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
     });
-
     ['dragleave', 'drop'].forEach(eventName => {
         dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
     });
 
     // Handle drop
     dropzone.addEventListener('drop', handleDrop, false);
-    
+
     // Handle click upload
     fileInput.addEventListener('change', (e) => {
-        if(e.target.files.length) {
+        if (e.target.files.length) {
             uploadFile(e.target.files[0]);
         }
     });
@@ -53,29 +52,25 @@ document.addEventListener('DOMContentLoaded', () => {
         errorContainer.style.display = 'none';
         progressContainer.style.display = 'block';
         dropzone.style.display = 'none';
-        
+
         progressFill.style.width = '10%';
         progressPercent.innerText = '10%';
-        statusText.innerText = `Uploading ${file.name}...`;
+        statusText.innerText = 'Uploading ' + file.name + '...';
 
         const formData = new FormData();
         formData.append('file', file);
 
-        // Fake progress animation since fetch doesn't have native upload progress easily without XMLHttpRequest
+        // Fake progress animation
         let fakeProgress = 10;
         const interval = setInterval(() => {
             if (fakeProgress < 85) {
                 fakeProgress += Math.random() * 15;
                 if (fakeProgress > 85) fakeProgress = 85;
-                progressFill.style.width = `${fakeProgress}%`;
-                progressPercent.innerText = `${Math.floor(fakeProgress)}%`;
-                
-                if (fakeProgress > 40) {
-                    statusText.innerText = 'Running Static Analysis...';
-                }
-                if (fakeProgress > 70) {
-                    statusText.innerText = 'Extracting Indicators of Compromise...';
-                }
+                progressFill.style.width = fakeProgress + '%';
+                progressPercent.innerText = Math.floor(fakeProgress) + '%';
+
+                if (fakeProgress > 40) statusText.innerText = 'Running Static Analysis...';
+                if (fakeProgress > 70) statusText.innerText = 'Extracting Indicators of Compromise...';
             }
         }, 500);
 
@@ -84,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body: formData
         })
         .then(response => {
-            if (!response.ok) throw new Error('Server error during scan');
+            if (!response.ok) throw new Error('Server error during scan (HTTP ' + response.status + ')');
             return response.json();
         })
         .then(data => {
@@ -92,9 +87,21 @@ document.addEventListener('DOMContentLoaded', () => {
             progressFill.style.width = '100%';
             progressPercent.innerText = '100%';
             statusText.innerText = 'Analysis Complete! Redirecting...';
-            
+
+            // FIX: Store the full report in sessionStorage so report.js can
+            // render it without a separate /api/report/ call.
+            // This is essential on Vercel where each serverless function has
+            // its own isolated /tmp — the DB written by scan.py is NOT
+            // readable by report.py (different containers).
+            if (data.report) {
+                // Add timestamp for display
+                data.report.timestamp = new Date().toISOString();
+                sessionStorage.setItem('pendingReport', JSON.stringify(data.report));
+            }
+
+            const reportId = data.id || 'new';
             setTimeout(() => {
-                window.location.href = `/report.html?id=${data.id}`;
+                window.location.href = '/report.html?id=' + reportId;
             }, 1000);
         })
         .catch(err => {

@@ -26,34 +26,58 @@ def scan_file():
     # Run analysis
     report = analyze_file(filename, file_bytes)
 
-    # Save to database (connection handles init internally)
-    conn = get_connection()
+    # Try to save to database (best-effort — may fail on Vercel due to ephemeral /tmp)
+    scan_id = None
     try:
-        c = conn.cursor()
-        c.execute('''
-            INSERT INTO scans (filename, size, type, md5, sha256, score, recommendation, static_details)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            report['filename'], report['size'], report['type'],
-            report['md5'], report['sha256'], report['score'],
-            report['recommendation'], json.dumps(report['static_details'])
-        ))
-        scan_id = c.lastrowid
-
-        for ioc in report['iocs']:
+        conn = get_connection()
+        try:
+            c = conn.cursor()
             c.execute('''
-                INSERT INTO iocs (scan_id, type, value)
-                VALUES (?, ?, ?)
-            ''', (scan_id, ioc['type'], ioc['value']))
+                INSERT INTO scans (filename, size, type, md5, sha256, score, recommendation, static_details)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                report['filename'], report['size'], report['type'],
+                report['md5'], report['sha256'], report['score'],
+                report['recommendation'], json.dumps(report['static_details'])
+            ))
+            scan_id = c.lastrowid
 
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        return jsonify({'error': f'Database error: {str(e)}'}), 500
-    finally:
-        conn.close()
+            for ioc in report['iocs']:
+                c.execute('''
+                    INSERT INTO iocs (scan_id, type, value)
+                    VALUES (?, ?, ?)
+                ''', (scan_id, ioc['type'], ioc['value']))
 
-    return jsonify({'id': scan_id, 'message': 'Scan complete'})
+            conn.commit()
+        except Exception as db_err:
+            conn.rollback()
+            scan_id = None
+        finally:
+            conn.close()
+    except Exception:
+        scan_id = None
+
+    # CRITICAL FIX: Always return the FULL report data in the scan response.
+    # This avoids the cross-container /tmp isolation issue on Vercel where
+    # report.py cannot read a DB written by scan.py (different containers).
+    return jsonify({
+        'id': scan_id,
+        'message': 'Scan complete',
+        # Full report data embedded so frontend can render without a second API call
+        'report': {
+            'id': scan_id,
+            'filename': report['filename'],
+            'size': report['size'],
+            'type': report['type'],
+            'md5': report['md5'],
+            'sha256': report['sha256'],
+            'score': report['score'],
+            'recommendation': report['recommendation'],
+            'static_details': report['static_details'],
+            'iocs': report['iocs'],
+            'timestamp': None  # will be set client-side
+        }
+    })
 
 # Vercel serverless WSGI handler
 def handler(environ, start_response):
