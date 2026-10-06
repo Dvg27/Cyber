@@ -1,4 +1,8 @@
 import random
+import sys
+import os
+# Ensure the package root is on sys.path for both local and Vercel execution
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from api._lib.hash_analyzer import calculate_hashes
 from api._lib.ioc_detector import detect_iocs
 

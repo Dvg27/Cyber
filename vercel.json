@@ -1,5 +1,13 @@
 {
   "version": 2,
+  "builds": [
+    { "src": "api/scan.py",   "use": "@vercel/python" },
+    { "src": "api/report.py", "use": "@vercel/python" },
+    { "src": "api/recent.py", "use": "@vercel/python" },
+    { "src": "api/stats.py",  "use": "@vercel/python" },
+    { "src": "api/iocs.py",   "use": "@vercel/python" },
+    { "src": "public/**",     "use": "@vercel/static" }
+  ],
   "routes": [
     { "src": "/api/scan",        "dest": "/api/scan.py" },
     { "src": "/api/report/(.+)", "dest": "/api/report.py" },

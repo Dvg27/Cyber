@@ -65,10 +65,12 @@ function renderReport(data) {
     
     if (data.static_details) {
         data.static_details.forEach(line => {
+            // Escape HTML to prevent XSS injection from filenames/paths
+            const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             let cssClass = 'info';
-            if (line.includes('Suspicious') || line.includes('Warning')) cssClass = 'warn';
-            if (line.includes('Malicious') || line.includes('Detected')) cssClass = 'err';
-            staticHtml += `<span class="${cssClass}">${line}</span>\n`;
+            if (line.startsWith('[WARN]') || line.includes('Suspicious') || line.includes('Warning')) cssClass = 'warn';
+            if (line.startsWith('[ERR]') || line.includes('Malicious') || line.includes('Detected')) cssClass = 'err';
+            staticHtml += `<span class="${cssClass}">${escaped}</span>\n`;
         });
     }
     details.innerHTML = staticHtml.replace(/\n/g, '<br>');

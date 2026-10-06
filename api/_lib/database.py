@@ -40,6 +40,7 @@ def init_db():
     conn.close()
 
 def get_connection():
+    """Get a database connection, ensuring tables are initialized first."""
     init_db()
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row

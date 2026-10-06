@@ -4,3 +4,9 @@ __pycache__/
 .env
 *.db
 .vercel
+venv/
+.venv/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

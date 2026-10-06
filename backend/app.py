@@ -37,27 +37,32 @@ def scan_file():
     
     # Save to database
     conn = get_connection()
-    c = conn.cursor()
-    c.execute('''
-        INSERT INTO scans (filename, size, type, md5, sha256, score, recommendation, static_details)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        report['filename'], report['size'], report['type'],
-        report['md5'], report['sha256'], report['score'],
-        report['recommendation'], json.dumps(report['static_details'])
-    ))
-    scan_id = c.lastrowid
-    
-    # Save IoCs
-    for ioc in report['iocs']:
+    try:
+        c = conn.cursor()
         c.execute('''
-            INSERT INTO iocs (scan_id, type, value)
-            VALUES (?, ?, ?)
-        ''', (scan_id, ioc['type'], ioc['value']))
-        
-    conn.commit()
-    conn.close()
-    
+            INSERT INTO scans (filename, size, type, md5, sha256, score, recommendation, static_details)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            report['filename'], report['size'], report['type'],
+            report['md5'], report['sha256'], report['score'],
+            report['recommendation'], json.dumps(report['static_details'])
+        ))
+        scan_id = c.lastrowid
+
+        # Save IoCs
+        for ioc in report['iocs']:
+            c.execute('''
+                INSERT INTO iocs (scan_id, type, value)
+                VALUES (?, ?, ?)
+            ''', (scan_id, ioc['type'], ioc['value']))
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+    finally:
+        conn.close()
+
     return jsonify({'id': scan_id, 'message': 'Scan complete'})
 
 @app.route('/api/report/<int:report_id>')
