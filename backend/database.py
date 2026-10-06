@@ -2,8 +2,10 @@ import sqlite3
 import os
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'database', 'malware.db')
+DB_PATH = os.environ.get('MALWARE_DB_PATH', DB_PATH)
 
 def init_db():
+    os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     

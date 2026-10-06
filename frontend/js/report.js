@@ -17,10 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cached) {
         try {
             const reportData = JSON.parse(cached);
-            // Only use if this is a fresh redirect (id matches or id is 'new')
-            sessionStorage.removeItem('pendingReport');
-            renderReport(reportData);
-            return;
+            if (String(reportData.id) === String(reportId)) {
+                sessionStorage.removeItem('pendingReport');
+                renderReport(reportData);
+                return;
+            }
         } catch (e) {
             sessionStorage.removeItem('pendingReport');
             // Fall through to API call

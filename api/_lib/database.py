@@ -1,12 +1,16 @@
 import sqlite3
 import os
 
-# On Vercel, /tmp is the only writable directory in serverless functions.
-# Data resets on cold starts. For persistent storage, replace with a
-# hosted database like PlanetScale, Supabase, or Railway.
-DB_PATH = '/tmp/malware.db'
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if os.environ.get('MALWARE_DB_PATH'):
+    DB_PATH = os.environ['MALWARE_DB_PATH']
+elif os.environ.get('VERCEL'):
+    DB_PATH = '/tmp/malware.db'
+else:
+    DB_PATH = os.path.join(PROJECT_ROOT, 'database', 'malware.db')
 
 def init_db():
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
@@ -42,6 +46,6 @@ def init_db():
 def get_connection():
     """Get a database connection, ensuring tables are initialized first."""
     init_db()
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     return conn

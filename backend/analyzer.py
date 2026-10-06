@@ -3,9 +3,12 @@ try:
     import magic
 except ImportError:
     pass
-import random
-from hash_analyzer import calculate_hashes
-from ioc_detector import detect_iocs
+try:
+    from .hash_analyzer import calculate_hashes
+    from .ioc_detector import detect_iocs
+except ImportError:
+    from hash_analyzer import calculate_hashes
+    from ioc_detector import detect_iocs
 
 def get_file_type(file_bytes):
     # Simplified mock for python-magic dependency
@@ -41,12 +44,9 @@ def analyze_file(filename, file_bytes):
             score += len(iocs) * 15
             
         # Simulate some random findings
-        if random.choice([True, False]):
+        if b'VirtualAlloc' in file_bytes:
             static_details.append("[WARN] Suspicious API import detected: VirtualAlloc (commonly used for unpacking).")
             score += 20
-        if random.choice([True, False]):
-            static_details.append("[ERR] Section .text has high entropy: 7.9 (Likely packed or encrypted).")
-            score += 25
     else:
         static_details.append("[INFO] File appears to be non-executable.")
         if len(iocs) > 0:

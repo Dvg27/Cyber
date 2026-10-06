@@ -79,8 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
             body: formData
         })
         .then(response => {
-            if (!response.ok) throw new Error('Server error during scan (HTTP ' + response.status + ')');
-            return response.json();
+            return response.json().catch(() => ({})).then(data => {
+                if (!response.ok) {
+                    throw new Error(data.error || 'Server error during scan (HTTP ' + response.status + ')');
+                }
+                return data;
+            });
         })
         .then(data => {
             clearInterval(interval);
@@ -99,7 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('pendingReport', JSON.stringify(data.report));
             }
 
-            const reportId = data.id || 'new';
+            if (!data.report || data.id === null || data.id === undefined) {
+                throw new Error('The server returned an incomplete scan report.');
+            }
+            const reportId = data.id;
             setTimeout(() => {
                 window.location.href = '/report.html?id=' + reportId;
             }, 1000);

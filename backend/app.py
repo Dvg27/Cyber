@@ -2,8 +2,12 @@ from flask import Flask, request, jsonify
 import os
 import json
 from werkzeug.utils import secure_filename
-from database import init_db, get_connection
-from analyzer import analyze_file
+try:
+    from .database import init_db, get_connection
+    from .analyzer import analyze_file
+except ImportError:
+    from database import init_db, get_connection
+    from analyzer import analyze_file
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='/')
 

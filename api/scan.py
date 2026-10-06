@@ -26,8 +26,6 @@ def scan_file():
     # Run analysis
     report = analyze_file(filename, file_bytes)
 
-    # Try to save to database (best-effort — may fail on Vercel due to ephemeral /tmp)
-    scan_id = None
     try:
         conn = get_connection()
         try:
@@ -51,11 +49,11 @@ def scan_file():
             conn.commit()
         except Exception as db_err:
             conn.rollback()
-            scan_id = None
+            return jsonify({'error': f'Database error: {db_err}'}), 500
         finally:
             conn.close()
-    except Exception:
-        scan_id = None
+    except Exception as db_err:
+        return jsonify({'error': f'Database error: {db_err}'}), 500
 
     # CRITICAL FIX: Always return the FULL report data in the scan response.
     # This avoids the cross-container /tmp isolation issue on Vercel where
