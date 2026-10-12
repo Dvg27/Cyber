@@ -91,6 +91,80 @@ function renderReport(data) {
         verdict.innerHTML = '<i class="fa-solid fa-shield-check"></i> CLEAN';
     }
 
+    // Malware Classification & Family
+    const malwareType = data.malware_type || 'Clean / Benign';
+    const malwareFamily = data.malware_family || 'None';
+    const matchedRules = data.matched_rules || [];
+
+    const typeElem = document.getElementById('rep-malware-type');
+    const familyElem = document.getElementById('rep-malware-family');
+    const typeBadge = document.getElementById('rep-malware-type-badge');
+    const typeIcon = document.getElementById('rep-type-icon');
+
+    if (typeElem) typeElem.innerText = malwareType;
+    if (familyElem) familyElem.innerText = malwareFamily;
+
+    if (typeBadge && typeIcon) {
+        typeBadge.className = 'classification-badge';
+        if (malwareType.includes('Ransomware')) {
+            typeBadge.classList.add('badge-ransomware');
+            typeIcon.className = 'fa-solid fa-skull-crossbones';
+        } else if (malwareType.includes('Spyware') || malwareType.includes('InfoStealer')) {
+            typeBadge.classList.add('badge-spyware');
+            typeIcon.className = 'fa-solid fa-user-secret';
+        } else if (malwareType.includes('Keylogger')) {
+            typeBadge.classList.add('badge-keylogger');
+            typeIcon.className = 'fa-solid fa-keyboard';
+        } else if (malwareType.includes('Trojan')) {
+            typeBadge.classList.add('badge-trojan');
+            typeIcon.className = 'fa-solid fa-horse-head';
+        } else if (malwareType.includes('Worm')) {
+            typeBadge.classList.add('badge-worm');
+            typeIcon.className = 'fa-solid fa-network-wired';
+        } else if (malwareType.includes('EICAR')) {
+            typeBadge.classList.add('badge-eicar');
+            typeIcon.className = 'fa-solid fa-vial-virus';
+        } else if (malwareType.includes('Clean')) {
+            typeBadge.classList.add('badge-clean');
+            typeIcon.className = 'fa-solid fa-shield-check';
+        } else {
+            typeBadge.classList.add('badge-suspicious');
+            typeIcon.className = 'fa-solid fa-triangle-exclamation';
+        }
+    }
+
+    // Render Matched Behavioral Rules
+    const rulesContainer = document.getElementById('rep-matched-rules');
+    if (rulesContainer) {
+        if (matchedRules.length > 0) {
+            rulesContainer.innerHTML = '';
+            matchedRules.forEach(r => {
+                const sev = r.severity || 'HIGH';
+                const sevClass = (sev === 'CRITICAL') ? 'err' : ((sev === 'HIGH') ? 'warn' : 'info');
+                const ruleItem = document.createElement('div');
+                ruleItem.className = 'rule-item ' + sevClass;
+                
+                let matchesHtml = '';
+                if (r.matches && r.matches.length > 0) {
+                    const safeMatches = r.matches.map(m => String(m).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')).join(' | ');
+                    matchesHtml = `<div class="rule-matches"><i class="fa-solid fa-terminal"></i> Pattern: <code>${safeMatches}</code></div>`;
+                }
+
+                ruleItem.innerHTML = `
+                    <div class="rule-title">
+                        <span class="rule-badge ${sevClass}">${sev}</span>
+                        <strong>${String(r.name || 'Rule').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</strong>
+                    </div>
+                    <div class="rule-desc">${String(r.desc || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</div>
+                    ${matchesHtml}
+                `;
+                rulesContainer.appendChild(ruleItem);
+            });
+        } else {
+            rulesContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No suspicious behavioral threat rules triggered.</p>';
+        }
+    }
+
     // Recommendation
     document.getElementById('rep-recommendation').innerText =
         data.recommendation || 'No specific recommendations.';

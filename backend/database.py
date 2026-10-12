@@ -20,9 +20,21 @@ def init_db():
             score INTEGER,
             recommendation TEXT,
             static_details TEXT,
+            malware_type TEXT DEFAULT 'Clean / Benign',
+            malware_family TEXT DEFAULT 'None',
+            matched_rules TEXT DEFAULT '[]',
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
+    # Auto-migrate existing database columns if upgrading
+    existing_cols = [row[1] for row in c.execute("PRAGMA table_info(scans)").fetchall()]
+    if 'malware_type' not in existing_cols:
+        c.execute("ALTER TABLE scans ADD COLUMN malware_type TEXT DEFAULT 'Clean / Benign'")
+    if 'malware_family' not in existing_cols:
+        c.execute("ALTER TABLE scans ADD COLUMN malware_family TEXT DEFAULT 'None'")
+    if 'matched_rules' not in existing_cols:
+        c.execute("ALTER TABLE scans ADD COLUMN matched_rules TEXT DEFAULT '[]'")
     
     c.execute('''
         CREATE TABLE IF NOT EXISTS iocs (
@@ -44,3 +56,4 @@ def get_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+

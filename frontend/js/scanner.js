@@ -119,4 +119,153 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMsg.innerText = err.message || 'Failed to upload and scan file.';
         });
     }
+
+    // Load and render Safe Test Samples Catalog
+    loadSamplesCatalog();
+
+    async function loadSamplesCatalog() {
+        const grid = document.getElementById('samples-grid');
+        if (!grid) return;
+
+        const defaultCatalog = [
+            {
+                id: "eicar",
+                filename: "01_eicar_test_sample.txt",
+                category: "EICAR Antivirus Standard",
+                expected_type: "EICAR Standard Test File",
+                badge_class: "badge-eicar",
+                icon: "fa-vial-virus",
+                threat_level: "Score: 100",
+                description: "Standard industry benign test string used worldwide to verify AV and scanner detection pipelines safely without malware risks."
+            },
+            {
+                id: "ransomware",
+                filename: "02_ransomware_simulation_sample.txt",
+                category: "Ransomware Simulation",
+                expected_type: "Ransomware",
+                badge_class: "badge-ransomware",
+                icon: "fa-skull-crossbones",
+                threat_level: "Score: 100",
+                description: "Safe simulated sample with shadow copy deletion commands, ransom note phrases, and file encryption APIs."
+            },
+            {
+                id: "infostealer",
+                filename: "03_infostealer_simulation_sample.txt",
+                category: "Spyware / InfoStealer",
+                expected_type: "Spyware / InfoStealer",
+                badge_class: "badge-spyware",
+                icon: "fa-user-secret",
+                threat_level: "Score: 100",
+                description: "Safe simulated sample targeting browser password vaults, DPAPI extraction APIs, and crypto wallets."
+            },
+            {
+                id: "trojan",
+                filename: "04_trojan_dropper_simulation_sample.txt",
+                category: "Trojan / Dropper Simulation",
+                expected_type: "Trojan / Dropper",
+                badge_class: "badge-trojan",
+                icon: "fa-horse-head",
+                threat_level: "Score: 100",
+                description: "Safe simulated sample with process memory injection (VirtualAllocEx), downloader commands, and reverse shell markers."
+            },
+            {
+                id: "keylogger",
+                filename: "05_keylogger_simulation_sample.txt",
+                category: "Keylogger Simulation",
+                expected_type: "Keylogger",
+                badge_class: "badge-keylogger",
+                icon: "fa-keyboard",
+                threat_level: "Score: 100",
+                description: "Safe simulated sample with SetWindowsHookEx keyboard hook APIs and keystroke buffer artifacts."
+            },
+            {
+                id: "clean",
+                filename: "06_clean_document_sample.txt",
+                category: "Benign Clean Document",
+                expected_type: "Clean / Benign",
+                badge_class: "badge-clean",
+                icon: "fa-shield-check",
+                threat_level: "Score: 0",
+                description: "Harmless plain text business memo containing zero malicious indicators to demonstrate clean file analysis."
+            }
+        ];
+
+        let catalog = defaultCatalog;
+        try {
+            const res = await fetch('/api/samples');
+            if (res.ok) {
+                const apiData = await res.json();
+                if (Array.isArray(apiData) && apiData.length > 0) {
+                    catalog = apiData.map(item => {
+                        const fallback = defaultCatalog.find(d => d.filename === item.filename) || {};
+                        return { ...fallback, ...item };
+                    });
+                }
+            }
+        } catch (e) {
+            // Use default catalog on network failure
+        }
+
+        grid.innerHTML = '';
+        catalog.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'sample-card';
+            card.innerHTML = `
+                <div>
+                    <div class="sample-card-header">
+                        <div>
+                            <div class="sample-title">${item.category}</div>
+                            <div class="sample-filename">${item.filename}</div>
+                        </div>
+                        <span class="badge ${item.expected_type && item.expected_type.includes('Clean') ? 'low' : 'high'}" style="font-size: 0.72rem;">
+                            ${item.threat_level || 'Test'}
+                        </span>
+                    </div>
+                    <p class="sample-desc" style="margin-top: 0.6rem;">${item.description}</p>
+                </div>
+                <div class="sample-actions">
+                    <button class="btn-sm btn-scan-sample" data-filename="${item.filename}">
+                        <i class="fa-solid fa-play"></i> Scan Instantly
+                    </button>
+                    <a href="/samples/${item.filename}" download="${item.filename}" class="btn-sm btn-download-sample" title="Download test file">
+                        <i class="fa-solid fa-download"></i> Download
+                    </a>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        // Attach Instant Scan click listeners
+        grid.querySelectorAll('.btn-scan-sample').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const filename = e.currentTarget.getAttribute('data-filename');
+                try {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Fetching...';
+                    
+                    // Fetch sample file content
+                    let fileBlob;
+                    let resp = await fetch('/samples/' + filename);
+                    if (!resp.ok) {
+                        resp = await fetch('/api/samples/' + filename);
+                    }
+                    if (resp.ok) {
+                        fileBlob = await resp.blob();
+                    } else {
+                        throw new Error('Could not load sample file from server.');
+                    }
+
+                    const sampleFile = new File([fileBlob], filename, { type: 'text/plain' });
+                    // Scroll to top and execute upload
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    uploadFile(sampleFile);
+                } catch (err) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-play"></i> Scan Instantly';
+                    alert('Error loading sample: ' + err.message);
+                }
+            });
+        });
+    }
 });
+

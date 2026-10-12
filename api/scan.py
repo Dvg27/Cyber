@@ -31,12 +31,15 @@ def scan_file():
         try:
             c = conn.cursor()
             c.execute('''
-                INSERT INTO scans (filename, size, type, md5, sha256, score, recommendation, static_details)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO scans (filename, size, type, md5, sha256, score, recommendation, static_details, malware_type, malware_family, matched_rules)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 report['filename'], report['size'], report['type'],
                 report['md5'], report['sha256'], report['score'],
-                report['recommendation'], json.dumps(report['static_details'])
+                report['recommendation'], json.dumps(report['static_details']),
+                report.get('malware_type', 'Clean / Benign'),
+                report.get('malware_family', 'None'),
+                json.dumps(report.get('matched_rules', []))
             ))
             scan_id = c.lastrowid
 
@@ -55,13 +58,10 @@ def scan_file():
     except Exception as db_err:
         return jsonify({'error': f'Database error: {db_err}'}), 500
 
-    # CRITICAL FIX: Always return the FULL report data in the scan response.
-    # This avoids the cross-container /tmp isolation issue on Vercel where
-    # report.py cannot read a DB written by scan.py (different containers).
+    # Return full report data including classification
     return jsonify({
         'id': scan_id,
         'message': 'Scan complete',
-        # Full report data embedded so frontend can render without a second API call
         'report': {
             'id': scan_id,
             'filename': report['filename'],
@@ -70,6 +70,10 @@ def scan_file():
             'md5': report['md5'],
             'sha256': report['sha256'],
             'score': report['score'],
+            'malware_type': report.get('malware_type', 'Clean / Benign'),
+            'malware_family': report.get('malware_family', 'None'),
+            'severity': report.get('severity', 'LOW'),
+            'matched_rules': report.get('matched_rules', []),
             'recommendation': report['recommendation'],
             'static_details': report['static_details'],
             'iocs': report['iocs'],

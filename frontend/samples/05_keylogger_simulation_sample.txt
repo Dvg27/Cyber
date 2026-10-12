@@ -1,0 +1,17 @@
+=== SIMULATED KEYLOGGER HEURISTIC TEST SAMPLE ===
+NOTICE: This is a harmless educational text file for testing antivirus and static malware analyzers.
+It does NOT contain executable or harmful code.
+
+[KEYBOARD INTERCEPTION HOOKS]
+API: SetWindowsHookEx
+Hook Type: WH_KEYBOARD_LL
+API: GetAsyncKeyState
+API: GetKeyState
+API: GetKeyboardState
+API: RegisterHotKey
+
+[LOG BUFFER FORMAT STRINGS]
+Log Formatting: [CAPSLOCK] [BACKSPACE] [ENTER] [SHIFT]
+Destination File: C:\Users\Public\keystrokes.log
+Secondary Buffer: keylog.txt
+Exfil Server: http://198.51.100.44/upload/logs.php

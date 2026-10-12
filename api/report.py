@@ -33,6 +33,12 @@ def get_report(report_id):
         result['static_details'] = json.loads(result['static_details']) if result['static_details'] else []
     except (json.JSONDecodeError, TypeError):
         result['static_details'] = []
+
+    try:
+        result['matched_rules'] = json.loads(result['matched_rules']) if result.get('matched_rules') else []
+    except (json.JSONDecodeError, TypeError):
+        result['matched_rules'] = []
+
     result['iocs'] = [dict(ioc) for ioc in iocs]
 
     return jsonify(result)

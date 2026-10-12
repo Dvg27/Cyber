@@ -44,6 +44,29 @@
                         <div class="kv-pair"><span class="kv-key">Scan Date</span><span class="kv-value" id="rep-date"></span></div>
                     </section>
 
+                    <section class="report-section" id="rep-classification-card">
+                        <h4><i class="fa-solid fa-biohazard"></i> Malware Classification</h4>
+                        <div class="classification-header">
+                            <div class="classification-badge" id="rep-malware-type-badge">
+                                <i class="fa-solid fa-shield-virus" id="rep-type-icon"></i>
+                                <span id="rep-malware-type">Analyzing...</span>
+                            </div>
+                            <div class="family-tag">
+                                <span class="family-label">Signature / Family:</span>
+                                <span id="rep-malware-family" class="hash-font">—</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 1.25rem;">
+                            <h5 style="color: var(--text-secondary); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;">
+                                <i class="fa-solid fa-crosshairs"></i> Matched Threat Heuristics & Rules
+                            </h5>
+                            <div id="rep-matched-rules" class="rules-container">
+                                <p style="color: var(--text-muted); font-size: 0.85rem;">Scanning heuristics...</p>
+                            </div>
+                        </div>
+                    </section>
+
                     <section class="report-section">
                         <h4><i class="fa-solid fa-bug"></i> Static Analysis Details</h4>
                         <div class="terminal" id="rep-static-details">

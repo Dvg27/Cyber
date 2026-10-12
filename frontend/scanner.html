@@ -54,6 +54,25 @@
                 <i class="fa-solid fa-triangle-exclamation"></i> <span id="scan-error-msg">Error occurred during scan.</span>
             </div>
         </section>
+
+        <!-- Interactive Test Samples Section -->
+        <section class="panel" style="max-width: 800px; margin: 2rem auto 0;">
+            <div class="panel-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                <div>
+                    <h2 class="panel-title"><i class="fa-solid fa-flask-vial"></i> Safe Test Samples (Benign / Simulated)</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.35rem;">
+                        Use these harmless test files to see how the engine classifies different malware categories. Click <strong>Scan Instantly</strong> or download the file to test.
+                    </p>
+                </div>
+            </div>
+
+            <div class="samples-grid" id="samples-grid">
+                <!-- Dynamically populated by scanner.js -->
+                <div style="grid-column: 1/-1; text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Loading test sample catalog...
+                </div>
+            </div>
+        </section>
     </main>
 
     <script src="/js/app.js"></script>

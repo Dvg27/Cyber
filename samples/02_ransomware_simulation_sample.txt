@@ -1,0 +1,21 @@
+=== SIMULATED RANSOMWARE HEURISTIC TEST SAMPLE ===
+NOTICE: This is a harmless educational text file for testing antivirus and static malware analyzers.
+It does NOT contain executable or harmful code.
+
+[EXTORTION NOTE ARTIFACT]
+ATTENTION! All your files have been encrypted using military grade AES-256 algorithm.
+Your private key will be destroyed in 48 hours unless you pay ransom.
+To decrypt_files, follow how_to_restore_files instructions.
+Contact decryption support and send bitcoin to: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+Or visit our dark web portal at: lockbit37v2y2d4y.onion
+
+[SIMULATED ENCRYPTOR HEURISTICS & ARTIFACTS]
+Target extensions: .locked, .crypto, .crypted, .lockbit
+Command: vssadmin delete shadows /all /quiet
+Command: wmic shadowcopy delete
+Command: bcdedit /set {default} bootstatuspolicy ignoreallfailures
+Imported API: CryptEncrypt
+Imported API: CryptGenKey
+Imported API: BCryptEncrypt
+C2 Callback: http://194.26.29.112/api/keys/submit
+README_DECRYPT.txt

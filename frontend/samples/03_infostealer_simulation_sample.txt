@@ -1,0 +1,20 @@
+=== SIMULATED INFOSTEALER HEURISTIC TEST SAMPLE ===
+NOTICE: This is a harmless educational text file for testing antivirus and static malware analyzers.
+It does NOT contain executable or harmful code.
+
+[TARGET VAULT ARTIFACTS]
+Target Browser Vault: AppData\Local\Google\Chrome\User Data\Default\Login Data
+Target Web Data: AppData\Local\Google\Chrome\User Data\Default\Web Data
+Target Firefox: cookies.sqlite, places.sqlite, key4.db, logins.json
+Target Crypto Wallets: wallet.dat, exodus.wallet, atomic, metamask
+
+[CREDENTIAL EXTRACTION APIS]
+API: CryptUnprotectData
+Library: VaultCli.dll
+API: CredEnumerate
+Target Process: lsass.exe
+
+[DATA EXFILTRATION CHANNEL]
+Exfiltration Endpoint: https://api.telegram.org/bot123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11/sendMessage
+C2 Exfil Server: https://stealer-c2-dropzone.org/gate.php
+Extracted Tokens: DiscordTokens

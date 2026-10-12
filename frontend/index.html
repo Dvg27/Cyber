@@ -70,16 +70,17 @@
                     <thead>
                         <tr>
                             <th>File Name</th>
+                            <th>Detected Malware Type</th>
                             <th>Date</th>
                             <th>SHA-256</th>
                             <th>Score</th>
-                            <th>Status</th>
+                            <th>Verdict</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="recent-scans-body">
                         <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading recent scans...</td>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading recent scans...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -102,20 +103,22 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No scans performed yet.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No scans performed yet.</td></tr>';
                     return;
                 }
 
                 data.forEach(scan => {
                     let badgeClass = scan.score >= 70 ? 'high' : (scan.score >= 30 ? 'medium' : 'low');
                     let status = scan.score >= 70 ? 'Malicious' : (scan.score >= 30 ? 'Suspicious' : 'Clean');
+                    let mType = scan.malware_type || (scan.score >= 70 ? 'Malware' : 'Clean / Benign');
                     
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><strong>${scan.filename}</strong></td>
+                        <td><span class="badge ${badgeClass}"><i class="fa-solid fa-biohazard"></i> ${mType}</span></td>
                         <td>${new Date(scan.timestamp).toLocaleString()}</td>
-                        <td class="hash-font">${scan.sha256.substring(0, 16)}...</td>
-                        <td>${scan.score}/100</td>
+                        <td class="hash-font">${scan.sha256 ? scan.sha256.substring(0, 16) + '...' : '—'}</td>
+                        <td><strong>${scan.score}</strong>/100</td>
                         <td><span class="badge ${badgeClass}">${status}</span></td>
                         <td><a href="/report.html?id=${scan.id}" style="color: var(--accent-blue); text-decoration: none;"><i class="fa-solid fa-arrow-up-right-from-square"></i> View</a></td>
                     `;

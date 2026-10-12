@@ -12,7 +12,7 @@ def get_recent_scans():
     conn = get_connection()
     try:
         c = conn.cursor()
-        c.execute('SELECT id, filename, sha256, score, timestamp FROM scans ORDER BY timestamp DESC LIMIT 10')
+        c.execute('SELECT id, filename, sha256, score, malware_type, malware_family, timestamp FROM scans ORDER BY timestamp DESC LIMIT 10')
         scans = c.fetchall()
     except Exception as e:
         return jsonify({'error': f'Database error: {str(e)}'}), 500
